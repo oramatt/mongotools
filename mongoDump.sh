@@ -136,16 +136,36 @@ exportSrc()
 
     log_action "User provided MongoDB URI: mongodb://$srcMongo"
 
-    # Add username/password for authentication
-    read -p "Enter MongoDB username (leave blank if not required): " MONGO_USER
-    read -s -p "Enter MongoDB password (leave blank if not required): " MONGO_PASS
+    echo "Enter MongoDB auth information (leave blank if not required): "
+    read -p "Auth database name:" AUTHDB  
+    read -p "Username: " MONGO_USER
+    read -s -p "Password: " MONGO_PASS
     echo ""
+
+    read -p "Use SSL connection: (yes/no): " useSSL
+
+    if [[ "$useSSL" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+        echo "Enter the path to the CA certificate file: "
+        read -p "CA File (e.g., /etc/ssl/mongodb-ca.pem): " CA_FILE
+        validate_input "$CA_FILE" "CA Certificate File"
+
+        echo "Enter the path to the client certificate key file (leave blank if not required): "
+        read -p "Client Certificate File (optional): " CERT_FILE
+
+        SSL_OPTIONS="--tls --tlsCAFile=\"$CA_FILE\""
+        if [[ -n "$CERT_FILE" ]]; then
+            validate_input "$CERT_FILE" "Client Certificate File"
+            SSL_OPTIONS="$SSL_OPTIONS --tlsCertificateKeyFile=\"$CERT_FILE\""
+        fi
+        log_action "SSL enabled with CA file: $CA_FILE"
+    else
+        SSL_OPTIONS=""
+    fi
 
     echo "Enter the collection name to export from (source) or leave blank to export all collections: "
     read -p "Example (registrations): " srcCol
 
     read -p "Specify number of parallel collections for export (leave blank for default): " numParallelCollections
-
     parallelArg=""
     if [[ -n "$numParallelCollections" ]]; then
         parallelArg="--numParallelCollections=$numParallelCollections"
@@ -157,8 +177,6 @@ exportSrc()
 
     log_action "Export directory specified: $jsonLoc"
 
-    echo "################################################"
-
     jsonLoc=$(echo "$jsonLoc" | sed 's:/*$::')
 
     if [[ ! -d "$jsonLoc" ]]; then
@@ -169,16 +187,16 @@ exportSrc()
 
     authArgs=""
     if [[ -n "$MONGO_USER" && -n "$MONGO_PASS" ]]; then
-        authArgs="--username=\"$MONGO_USER\" --password=\"$MONGO_PASS\" --authenticationDatabase=admin"
+        authArgs="--username=\"$MONGO_USER\" --password=\"$MONGO_PASS\" --authenticationDatabase=\"$AUTHDB\""
     fi
 
     if [[ -z "$srcCol" ]]; then
         echo "Exporting all collections from source MongoDB..."
-        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo\" $authArgs $parallelArg --out=\"$jsonLoc\""
+        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo\" $authArgs $parallelArg $SSL_OPTIONS --out=\"$jsonLoc\""
         log_action "Exporting all collections from: mongodb://$srcMongo"
     else
         echo "Exporting data from source MongoDB collection: $srcCol"
-        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo\" --collection=\"$srcCol\" $authArgs $parallelArg --out=\"$jsonLoc\""
+        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo\" --collection=\"$srcCol\" $authArgs $parallelArg $SSL_OPTIONS --out=\"$jsonLoc\""
         log_action "Exporting collection: $srcCol from: mongodb://$srcMongo"
     fi
 
@@ -200,6 +218,8 @@ exportSrc()
 
     sleep 5
 }
+
+
 
 
 
