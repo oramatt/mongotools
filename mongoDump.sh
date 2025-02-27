@@ -137,29 +137,34 @@ exportSrc()
     log_action "User provided MongoDB URI: mongodb://$srcMongo"
 
     echo "Enter MongoDB auth information (leave blank if not required): "
-    read -p "Auth database name:" AUTHDB  
+    read -p "Auth database name: " AUTHDB  
     read -p "Username: " MONGO_USER
     read -s -p "Password: " MONGO_PASS
     echo ""
 
-    read -p "Use SSL connection: (yes/no): " useSSL
+    read -p "Use SSL/TLS connection? (yes/no): " useSSL
+
+    SSL_OPTIONS=""
+    TLS_QUERY_PARAM=""
 
     if [[ "$useSSL" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-        echo "Enter the path to the CA certificate file: "
-        read -p "CA File (e.g., /etc/ssl/mongodb-ca.pem): " CA_FILE
-        validate_input "$CA_FILE" "CA Certificate File"
+        echo "Enter the path to the CA certificate file (leave blank if not required): "
+        read -p "CA File (e.g., /etc/mongodb/ssl/mongodb-cert.crt): " CA_FILE
+        
+        if [[ -n "$CA_FILE" && -f "$CA_FILE" ]]; then
+            SSL_OPTIONS="--sslCAFile=\"$CA_FILE\""
+        fi
 
         echo "Enter the path to the client certificate key file (leave blank if not required): "
         read -p "Client Certificate File (optional): " CERT_FILE
 
-        SSL_OPTIONS="--tls --tlsCAFile=\"$CA_FILE\""
-        if [[ -n "$CERT_FILE" ]]; then
-            validate_input "$CERT_FILE" "Client Certificate File"
-            SSL_OPTIONS="$SSL_OPTIONS --tlsCertificateKeyFile=\"$CERT_FILE\""
+        if [[ -n "$CERT_FILE" && -f "$CERT_FILE" ]]; then
+            SSL_OPTIONS="$SSL_OPTIONS --sslPEMKeyFile=\"$CERT_FILE\""
         fi
-        log_action "SSL enabled with CA file: $CA_FILE"
-    else
-        SSL_OPTIONS=""
+        
+        TLS_QUERY_PARAM="?ssl=true"
+        
+        log_action "SSL enabled with CA file: $CA_FILE and Certificate File: $CERT_FILE"
     fi
 
     echo "Enter the collection name to export from (source) or leave blank to export all collections: "
@@ -192,17 +197,19 @@ exportSrc()
 
     if [[ -z "$srcCol" ]]; then
         echo "Exporting all collections from source MongoDB..."
-        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo\" $authArgs $parallelArg $SSL_OPTIONS --out=\"$jsonLoc\""
+        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo$TLS_QUERY_PARAM\" $authArgs $parallelArg $SSL_OPTIONS --tlsInsecure --out=\"$jsonLoc\""
         log_action "Exporting all collections from: mongodb://$srcMongo"
     else
         echo "Exporting data from source MongoDB collection: $srcCol"
-        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo\" --collection=\"$srcCol\" $authArgs $parallelArg $SSL_OPTIONS --out=\"$jsonLoc\""
+        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo$TLS_QUERY_PARAM\" --collection=\"$srcCol\" $authArgs $parallelArg $SSL_OPTIONS --tlsInsecure --out=\"$jsonLoc\""
         log_action "Exporting collection: $srcCol from: mongodb://$srcMongo"
     fi
 
-    echo "Running: $dumpCommand"
-    log_action "Executing command: $dumpCommand"
+    # **NEW: Log the full command to the log file**
+    log_action "Executing mongodump command: $dumpCommand"
 
+    echo "Running: $dumpCommand"
+    
     eval "$dumpCommand"
     if [[ $? -ne 0 ]]; then
         echo "Error: mongodump failed. Check source MongoDB details."
@@ -218,6 +225,7 @@ exportSrc()
 
     sleep 5
 }
+
 
 
 
@@ -301,7 +309,7 @@ importTgt()
     log_action "MongoDB import completed successfully. Data imported into: $tgtDb"
 
     echo "################################################"
-    echo "       Restore complete! All data has been imported into: $tgtDb"
+    echo "       Data has been imported into: $tgtDb.     "
     echo "################################################"
 
     sleep 5
