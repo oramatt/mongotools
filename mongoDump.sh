@@ -205,7 +205,7 @@ exportSrc()
         log_action "Exporting collection: $srcCol from: mongodb://$srcMongo"
     fi
 
-    # **NEW: Log the full command to the log file**
+    # Log the full command to the log file, useful for troubleshooting 🤞 **
     log_action "Executing mongodump command: $dumpCommand"
 
     echo "Running: $dumpCommand"
