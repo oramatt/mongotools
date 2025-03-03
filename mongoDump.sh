@@ -197,15 +197,15 @@ exportSrc()
 
     if [[ -z "$srcCol" ]]; then
         echo "Exporting all collections from source MongoDB..."
-        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo$TLS_QUERY_PARAM\" $authArgs $parallelArg $SSL_OPTIONS --tlsInsecure --out=\"$jsonLoc\""
-        log_action "Exporting all collections from: mongodb://$srcMongo"
+        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo$TLS_QUERY_PARAM\" $authArgs $parallelArg $SSL_OPTIONS --tlsInsecure --gzip --out=\"$jsonLoc\""
+        log_action "Exporting all collections from: mongodb://$srcMongo with gzip compression"
     else
         echo "Exporting data from source MongoDB collection: $srcCol"
-        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo$TLS_QUERY_PARAM\" --collection=\"$srcCol\" $authArgs $parallelArg $SSL_OPTIONS --tlsInsecure --out=\"$jsonLoc\""
-        log_action "Exporting collection: $srcCol from: mongodb://$srcMongo"
+        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo$TLS_QUERY_PARAM\" --collection=\"$srcCol\" $authArgs $parallelArg $SSL_OPTIONS --tlsInsecure --gzip --out=\"$jsonLoc\""
+        log_action "Exporting collection: $srcCol from: mongodb://$srcMongo with gzip compression"
     fi
 
-    # Log the full command to the log file, useful for troubleshooting 🤞 **
+    # Log the full command to the log file
     log_action "Executing mongodump command: $dumpCommand"
 
     echo "Running: $dumpCommand"
@@ -217,7 +217,7 @@ exportSrc()
         exit 1
     fi
 
-    log_action "MongoDB export completed successfully. Data saved to: $jsonLoc"
+    log_action "MongoDB export completed successfully with gzip compression. Data saved to: $jsonLoc"
 
     echo "################################################"
     echo "        Export saved to: $jsonLoc               "
@@ -225,10 +225,6 @@ exportSrc()
 
     sleep 5
 }
-
-
-
-
 
 
 
@@ -282,7 +278,7 @@ importTgt()
 
     log_action "Scanning for BSON files in: $bsonBaseDir"
 
-    bsonFiles=($(find "$bsonBaseDir" -type f -name "*.bson"))
+    bsonFiles=($(find "$bsonBaseDir" -type f -name "*.bson.gz"))
 
     if [[ ${#bsonFiles[@]} -eq 0 ]]; then
         echo "Error: No BSON files found in the specified directory: $bsonBaseDir"
@@ -291,13 +287,14 @@ importTgt()
     fi
 
     for bsonFile in "${bsonFiles[@]}"; do
-        collectionName=$(basename "$bsonFile" .bson)
+        collectionName=$(basename "$bsonFile" .bson.gz)
         dbName=$(basename "$(dirname "$bsonFile")")
 
         echo "Importing collection: $collectionName from $bsonFile into target database: $tgtDb"
         log_action "Importing collection: $collectionName from file: $bsonFile into $tgtDb"
+        log_action "Restore command is: $mongorestore_path --uri="mongodb://$tgtMongo" --db="$tgtDb" --tlsInsecure --gzip --collection="$collectionName" --nsInclude="$tgtDb.$collectionName" "$bsonFile""
 
-        $mongorestore_path --uri="mongodb://$tgtMongo" --db="$tgtDb" --tlsInsecure --collection="$collectionName" --nsInclude="$tgtDb.$collectionName" "$bsonFile"
+        $mongorestore_path --uri="mongodb://$tgtMongo" --db="$tgtDb" --tlsInsecure --gzip --collection="$collectionName" --nsInclude="$tgtDb.$collectionName" "$bsonFile"
 
         if [[ $? -ne 0 ]]; then
             echo "Error: mongorestore failed for collection: $collectionName"
@@ -306,7 +303,7 @@ importTgt()
         fi
     done
 
-    log_action "MongoDB import completed successfully. Data imported into: $tgtDb"
+    log_action "MongoDB import completed successfully with gzip decompression. Data imported into: $tgtDb"
 
     echo "################################################"
     echo "       Data has been imported into: $tgtDb.     "
@@ -314,6 +311,7 @@ importTgt()
 
     sleep 5
 }
+
 
 
 # Do both export and import in one pass
@@ -324,8 +322,6 @@ doBoth()
     importTgt
 
 }
-
-
 
 # Main script
 # Initialize the invalid attempt counter to escape the while loop
