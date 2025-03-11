@@ -334,7 +334,6 @@ importTgt()
         if [[ $? -ne 0 ]]; then
             echo "Error: mongorestore failed for collection: $collectionName"
             log_action "Error: mongorestore failed for collection: $collectionName"
-            exit 1
         fi
     done
 
