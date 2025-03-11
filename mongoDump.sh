@@ -241,8 +241,9 @@ importTgt()
     read -p "Username: " tgtUser
     validate_input "$tgtUser" "Username"
 
-    read -sp "Password: " tgtPass
-    echo
+    read -p "Password: " tgtPass
+    # read -p "Password: " tgtPass #use this to 'hide' password from screen
+    echo #need for readability
     validate_input "$tgtPass" "Password"
 
     read -p "Hostname (e.g., localhost): " tgtHost
@@ -253,10 +254,44 @@ importTgt()
 
     log_action "Target database set to: $tgtDb"
 
-    encode_url() {
+    # remove jq usage as not available natively on *NIX systems
+    # this is not used but needed here to perform functional tests
+    jqencode_url() {
         echo -n "$1" | jq -sRr @uri
     }
+    #encoded_pass=$(jqencode_url "$tgtPass")
+
+    # encode reserved/special characters in the password for the connection url using standard shell
+    # encoding # might be an issue to revisit
+    # this was more difficult then initially thought >.<
+
+    encode_url() {
+    local input="$1"
+    local output=""
+    local i c
+    
+    for (( i=0; i<${#input}; i++ )); do
+        c="${input:$i:1}"
+        case "$c" in
+            [a-zA-Z0-9.~_-]) output+="$c" ;;
+            *) output+="$(printf '%%%02X' "'$c")" ;;
+        esac
+    done
+    
+    #echo "$input"
+    echo "$output"
+    }
     encoded_pass=$(encode_url "$tgtPass")
+
+    # tests
+    # test="matt@\!1\#"; echo $test
+    # case 1 with jq
+    # jqencode_url $test
+
+    # case 2 with shell
+    # encode_url $test
+
+    # expected output result for both funcations is: matt%40%211%5C%23
 
     tgtMongo="${tgtUser}:${encoded_pass}@${tgtHost}:27017/${tgtDb}?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true"
     echo "Constructed Target MongoDB URI: mongodb://${tgtMongo}"
@@ -306,7 +341,7 @@ importTgt()
     log_action "MongoDB import completed successfully with gzip decompression. Data imported into: $tgtDb"
 
     echo "################################################"
-    echo "       Data has been imported into: $tgtDb.     "
+    echo "       Data has been imported into: $tgtDb      "
     echo "################################################"
 
     sleep 5
