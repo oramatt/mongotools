@@ -7,14 +7,14 @@
 2025-03-11 14:02:23 - MongoDB export completed successfully with gzip compression. Data saved to: /tmp/test6
 2025-03-11 14:02:28 - Starting MongoDB import process.
 2025-03-11 14:02:54 - Target database set to: matt
-2025-03-11 14:02:54 - MongoDB import target URI: mongodb://tim:t%21m%40here@localhost:27017/matt?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true
+2025-03-11 14:02:54 - MongoDB import target URI: mongodb://tim:<pwd>@localhost:27017/matt?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true
 2025-03-11 14:02:59 - User provided BSON export directory: /tmp/test6
 2025-03-11 14:02:59 - Scanning for BSON files in: /tmp/test6
 2025-03-11 14:02:59 - Importing collection: registrations from file: /tmp/test6/test/registrations.bson.gz into matt
-2025-03-11 14:02:59 - Restore command is: mongorestore --uri=mongodb://tim:t%21m%40here@localhost:27017/matt?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true --db=matt --tlsInsecure --gzip --collection=registrations --nsInclude=matt.registrations /tmp/test6/test/registrations.bson.gz
+2025-03-11 14:02:59 - Restore command is: mongorestore --uri=mongodb://tim:<pwd>@localhost:27017/matt?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true --db=matt --tlsInsecure --gzip --collection=registrations --nsInclude=matt.registrations /tmp/test6/test/registrations.bson.gz
 2025-03-11 14:03:57 - Error: mongorestore failed for collection: registrations
 2025-03-11 14:03:57 - Importing collection: otherData from file: /tmp/test6/test/otherData.bson.gz into matt
-2025-03-11 14:03:57 - Restore command is: mongorestore --uri=mongodb://tim:t%21m%40here@localhost:27017/matt?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true --db=matt --tlsInsecure --gzip --collection=otherData --nsInclude=matt.otherData /tmp/test6/test/otherData.bson.gz
+2025-03-11 14:03:57 - Restore command is: mongorestore --uri=mongodb://tim:<pwd>@localhost:27017/matt?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true --db=matt --tlsInsecure --gzip --collection=otherData --nsInclude=matt.otherData /tmp/test6/test/otherData.bson.gz
 2025-03-11 14:04:04 - Importing collection: demoData from file: /tmp/test6/test/demoData.bson.gz into matt
-2025-03-11 14:04:04 - Restore command is: mongorestore --uri=mongodb://tim:t%21m%40here@localhost:27017/matt?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true --db=matt --tlsInsecure --gzip --collection=demoData --nsInclude=matt.demoData /tmp/test6/test/demoData.bson.gz
+2025-03-11 14:04:04 - Restore command is: mongorestore --uri=mongodb://tim:<pwd>@localhost:27017/matt?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true --db=matt --tlsInsecure --gzip --collection=demoData --nsInclude=matt.demoData /tmp/test6/test/demoData.bson.gz
 2025-03-11 14:04:04 - MongoDB import completed successfully with gzip decompression. Data imported into: matt
