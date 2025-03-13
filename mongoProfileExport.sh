@@ -92,7 +92,7 @@ validate_connection() {
 # Check current profiling state
 check_profiling_state() {
     echo "Checking current profiling state..."
-    PROFILING_LEVEL=$($MONGOSH --quiet --eval "db.getProfilingStatus().level" "$CONNECTION_STRING/$DATABASE")
+    PROFILING_LEVEL=$($MONGOSH --quiet --eval "db.getProfilingStatus().was" "$CONNECTION_STRING/$DATABASE")
     if [[ "$PROFILING_LEVEL" -eq 0 ]]; then
         echo "Profiling is currently DISABLED for the database $DATABASE."
         log_action "Profiling is currently DISABLED for the database $DATABASE."
