@@ -318,7 +318,7 @@ importTgt()
         fi
     fi
 
-    echo "Restore options: "$perfArgs
+    #echo "Restore options: "$perfArgs
 
     for bsonFile in "${bsonFiles[@]}"; do
         collectionName=$(basename "$bsonFile" .bson.gz)
@@ -327,7 +327,7 @@ importTgt()
         echo "Importing collection: $collectionName from $bsonFile into target database: $tgtDb"
         log_action "Importing collection: $collectionName from file: $bsonFile into $tgtDb"
 
-        # Log and execute with optional perf args
+        # Display, log and execute with optional perf args
         echo "Restore command is: $mongorestore_path --uri=\"mongodb://$tgtMongo\" --db=\"$tgtDb\" --tlsInsecure --gzip --collection=\"$collectionName\" --nsInclude=\"$tgtDb.$collectionName\"$perfArgs \"$bsonFile\""
         log_action "Restore command is: $mongorestore_path --uri=\"mongodb://$tgtMongo\" --db=\"$tgtDb\" --tlsInsecure --gzip --collection=\"$collectionName\" --nsInclude=\"$tgtDb.$collectionName\"$perfArgs \"$bsonFile\""
 
