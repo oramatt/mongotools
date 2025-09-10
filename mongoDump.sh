@@ -210,12 +210,21 @@ exportSrc()
 
     echo "Running: $dumpCommand"
     
+    startDump=$(date +%s)
+    log_action "Export start timestamp: $startDump"
+
     eval "$dumpCommand"
     if [[ $? -ne 0 ]]; then
         echo "Error: mongodump failed. Check source MongoDB details."
         log_action "Error: mongodump failed."
         exit 1
     fi
+
+    endDump=$(date +%s)
+    log_action "Export end timestamp: $endDump"
+
+    durationExport=$(( endDump - startDump ))
+    log_action "Export took: $durationExport"
 
     log_action "MongoDB export completed successfully with gzip compression. Data saved to: $jsonLoc"
 
@@ -331,6 +340,9 @@ importTgt()
         echo "Restore command is: $mongorestore_path --uri=\"mongodb://$tgtMongo\" --db=\"$tgtDb\" --tlsInsecure --gzip --collection=\"$collectionName\" --nsInclude=\"$tgtDb.$collectionName\"$perfArgs \"$bsonFile\""
         log_action "Restore command is: $mongorestore_path --uri=\"mongodb://$tgtMongo\" --db=\"$tgtDb\" --tlsInsecure --gzip --collection=\"$collectionName\" --nsInclude=\"$tgtDb.$collectionName\"$perfArgs \"$bsonFile\""
 
+        startRestore=$(date +%s)
+        log_action "Restore start timestamp: $startRestore"
+
         $mongorestore_path \
             --uri="mongodb://$tgtMongo" \
             --db="$tgtDb" \
@@ -346,6 +358,12 @@ importTgt()
             log_action "Error: mongorestore failed for collection: $collectionName"
         fi 
     done
+
+    endRestore=$(date +%s)
+    log_action "Restore end timestamp: $endRestore"
+
+    durationRestore=$(( endRestore - startRestore ))
+    log_action "Restore took: $durationRestore"
 
     log_action "MongoDB import completed successfully with gzip decompression. Data imported into: $tgtDb"
 
