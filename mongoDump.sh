@@ -242,8 +242,7 @@ importTgt()
     validate_input "$tgtUser" "Username"
 
     read -p "Password: " tgtPass
-    # read -p "Password: " tgtPass #use this to 'hide' password from screen
-    echo #need for readability
+    echo
     validate_input "$tgtPass" "Password"
 
     read -p "Hostname (e.g., localhost): " tgtHost
@@ -254,55 +253,27 @@ importTgt()
 
     log_action "Target database set to: $tgtDb"
 
-    # remove jq usage as not available natively on *NIX systems
-    # this is not used but needed here to perform functional tests
-    jqencode_url() {
-        echo -n "$1" | jq -sRr @uri
-    }
-    #encoded_pass=$(jqencode_url "$tgtPass")
-
-    # encode reserved/special characters in the password for the connection url using standard shell
-    # encoding # might be an issue to revisit
-    # this was more difficult then initially thought >.<
-
+    # URL-encode password
     encode_url() {
-    local input="$1"
-    local output=""
-    local i c
-    
-    for (( i=0; i<${#input}; i++ )); do
-        c="${input:$i:1}"
-        case "$c" in
-            [a-zA-Z0-9.~_-]) output+="$c" ;;
-            *) output+="$(printf '%%%02X' "'$c")" ;;
-        esac
-    done
-    
-    #echo "$input"
-    echo "$output"
+        local input="$1" output="" i c
+        for (( i=0; i<${#input}; i++ )); do
+            c="${input:$i:1}"
+            case "$c" in
+                [a-zA-Z0-9.~_-]) output+="$c" ;;
+                *) output+="$(printf '%%%02X' "'$c")" ;;
+            esac
+        done
+        echo "$output"
     }
     encoded_pass=$(encode_url "$tgtPass")
 
-    # tests
-    # test="matt@\!1\#"; echo $test
-    # case 1 with jq
-    # jqencode_url $test
-
-    # case 2 with shell
-    # encode_url $test
-
-    # expected output result for both funcations is: matt%40%211%5C%23
-
     tgtMongo="${tgtUser}:${encoded_pass}@${tgtHost}:27017/${tgtDb}?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true"
     echo "Constructed Target MongoDB URI: mongodb://${tgtMongo}"
-
     log_action "MongoDB import target URI: mongodb://${tgtMongo}"
 
     echo "################################################"
-
     read -p "Enter the base directory where BSON files are stored (e.g., /tmp/exportDir/): " bsonBaseDir
     validate_input "$bsonBaseDir" "BSON export directory"
-
     log_action "User provided BSON export directory: $bsonBaseDir"
 
     if [[ ! -d "$bsonBaseDir" ]]; then
@@ -312,7 +283,6 @@ importTgt()
     fi
 
     log_action "Scanning for BSON files in: $bsonBaseDir"
-
     bsonFiles=($(find "$bsonBaseDir" -type f -name "*.bson.gz"))
 
     if [[ ${#bsonFiles[@]} -eq 0 ]]; then
@@ -321,20 +291,60 @@ importTgt()
         exit 1
     fi
 
+    # Added 09.10.2025 from customer request
+    echo "Optional restore performance options (press Enter to skip either):"
+    read -p "Specify number of insertion workers per collection: " numInsertWorkers
+    read -p "Specify number of collections to restore in parallel: " numParallelCollections
+
+    # no need for an array, just use a string
+    perfArgs=""
+    if [[ -n "$numInsertWorkers" ]]; then
+        if [[ "$numInsertWorkers" =~ ^[1-9][0-9]*$ ]]; then
+            perfArgs+=" --numInsertionWorkersPerCollection=$numInsertWorkers"
+            log_action "Using numInsertionWorkersPerCollection=$numInsertWorkers"
+        else
+            echo "Warning: invalid value for insertion workers '$numInsertWorkers' (ignored)"
+            log_action "Invalid numInsertionWorkersPerCollection provided: $numInsertWorkers"
+        fi
+    fi
+
+    if [[ -n "$numParallelCollections" ]]; then
+        if [[ "$numParallelCollections" =~ ^[1-9][0-9]*$ ]]; then
+            perfArgs+=" --numParallelCollections=$numParallelCollections"
+            log_action "Using numParallelCollections=$numParallelCollections"
+        else
+            echo "Warning: invalid value for parallel collections '$numParallelCollections' (ignored)"
+            log_action "Invalid numParallelCollections provided: $numParallelCollections"
+        fi
+    fi
+
+    echo "Restore options: "$perfArgs
+
     for bsonFile in "${bsonFiles[@]}"; do
         collectionName=$(basename "$bsonFile" .bson.gz)
         dbName=$(basename "$(dirname "$bsonFile")")
 
         echo "Importing collection: $collectionName from $bsonFile into target database: $tgtDb"
         log_action "Importing collection: $collectionName from file: $bsonFile into $tgtDb"
-        log_action "Restore command is: $mongorestore_path --uri="mongodb://$tgtMongo" --db="$tgtDb" --tlsInsecure --gzip --collection="$collectionName" --nsInclude="$tgtDb.$collectionName" "$bsonFile""
 
-        $mongorestore_path --uri="mongodb://$tgtMongo" --db="$tgtDb" --tlsInsecure --gzip --collection="$collectionName" --nsInclude="$tgtDb.$collectionName" "$bsonFile"
+        # Log and execute with optional perf args
+        echo "Restore command is: $mongorestore_path --uri=\"mongodb://$tgtMongo\" --db=\"$tgtDb\" --tlsInsecure --gzip --collection=\"$collectionName\" --nsInclude=\"$tgtDb.$collectionName\"$perfArgs \"$bsonFile\""
+        log_action "Restore command is: $mongorestore_path --uri=\"mongodb://$tgtMongo\" --db=\"$tgtDb\" --tlsInsecure --gzip --collection=\"$collectionName\" --nsInclude=\"$tgtDb.$collectionName\"$perfArgs \"$bsonFile\""
+
+        $mongorestore_path \
+            --uri="mongodb://$tgtMongo" \
+            --db="$tgtDb" \
+            --tlsInsecure \
+            --gzip \
+            --collection="$collectionName" \
+            --nsInclude="$tgtDb.$collectionName" \
+            $perfArgs \
+            "$bsonFile"
 
         if [[ $? -ne 0 ]]; then
             echo "Error: mongorestore failed for collection: $collectionName"
             log_action "Error: mongorestore failed for collection: $collectionName"
-        fi
+        fi 
     done
 
     log_action "MongoDB import completed successfully with gzip decompression. Data imported into: $tgtDb"
@@ -342,7 +352,6 @@ importTgt()
     echo "################################################"
     echo "       Data has been imported into: $tgtDb      "
     echo "################################################"
-
     sleep 5
 }
 
@@ -371,7 +380,6 @@ do
         *) badChoice ;;
     esac
 done
-
 
 
 
