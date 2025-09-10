@@ -130,7 +130,7 @@ You’ll be presented with a menu:
 - Runs export and import back-to-back, preserving the same auth/TLS/parallel prompts for each phase.
 
 #### Logging
-- Logs all actions into a timestamped log file (`mongoMover.log`), including which parallel flags were applied (when provided).
+- Logs all actions into a timestamped log file, including which parallel flags were applied, when and if provided.
 
 ---
 
