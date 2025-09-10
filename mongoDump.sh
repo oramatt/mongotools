@@ -197,11 +197,11 @@ exportSrc()
 
     if [[ -z "$srcCol" ]]; then
         echo "Exporting all collections from source MongoDB..."
-        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo$TLS_QUERY_PARAM\" $authArgs $parallelArg $SSL_OPTIONS --tlsInsecure --gzip --out=\"$jsonLoc\""
+        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo$TLS_QUERY_PARAM\" $authArgs $parallelArg $SSL_OPTIONS --compressors=snappy --tlsInsecure --gzip --out=\"$jsonLoc\""
         log_action "Exporting all collections from: mongodb://$srcMongo with gzip compression"
     else
         echo "Exporting data from source MongoDB collection: $srcCol"
-        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo$TLS_QUERY_PARAM\" --collection=\"$srcCol\" $authArgs $parallelArg $SSL_OPTIONS --tlsInsecure --gzip --out=\"$jsonLoc\""
+        dumpCommand="$mongodump_path --uri=\"mongodb://$srcMongo$TLS_QUERY_PARAM\" --collection=\"$srcCol\" $authArgs $parallelArg $SSL_OPTIONS --compressors=snappy --tlsInsecure --gzip --out=\"$jsonLoc\""
         log_action "Exporting collection: $srcCol from: mongodb://$srcMongo with gzip compression"
     fi
 
