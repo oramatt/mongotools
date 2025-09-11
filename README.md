@@ -104,8 +104,8 @@ You’ll be presented with a menu:
   Hostname (e.g., localhost): localhost
   Oracle schema (target database): matt
 
-  Specify number of insertion workers per collection (leave blank for default): 128
-  Specify number of collections to restore in parallel (leave blank for default): 64
+  Specify number of insertion workers per collection (leave blank for default): 8
+  Specify number of collections to restore in parallel (leave blank for default): 4
 
   Enter the base directory where BSON files are stored (e.g., /tmp/exportDir/): /tmp/exportDir
   ```
@@ -115,7 +115,7 @@ You’ll be presented with a menu:
 - Behind the scenes, the script issues a `mongorestore` command per collection, shaped like:
 
   ```bash
-  mongorestore     --uri="mongodb://matt:********@localhost:27017/matt?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true"     --db matt     --gzip     --collection <collectionName>     --nsInclude "matt.<collectionName>"     --tlsInsecure     --numInsertionWorkersPerCollection 128     --numParallelCollections 64     /tmp/exportDir/matt/<collectionName>.bson.gz
+  mongorestore --uri="mongodb://matt:XXXXX@localhost:27017/matt?authMechanism=PLAIN&authSource=%24external&tls=true&retryWrites=false&loadBalanced=true" --db="matt" --tlsInsecure --gzip --collection="registrations" --nsInclude="matt.registrations" --numInsertionWorkersPerCollection=8 "/tmp/test1/test/registrations.bson.gz
   ```
 
 ### Notes  
