@@ -67,7 +67,7 @@ You’ll be presented with a menu:
   Client Certificate File (optional):
 
   Enter the collection name to export from (source) or leave blank to export all collections:
-  Example (registrations):            ← (press Enter to export all)
+  Example (registrations):            (press Enter to export all)
 
   Specify number of parallel collections for export (leave blank for default): 8
 
@@ -84,12 +84,12 @@ You’ll be presented with a menu:
 
   **All collections**
   ```bash
-  mongodump --uri="mongodb://<host:port/db>?ssl=true" <authArgs> <sslArgs>     --tlsInsecure --gzip --out="<dir>"     --numParallelCollections 8
+  mongodump --uri="mongodb://<host:port/db>?ssl=true" <authArgs> <sslArgs>  --tlsInsecure --gzip --out="<dir>"  --numParallelCollections 8
   ```
 
   **Single collection**
   ```bash
-  mongodump --uri="mongodb://<host:port/db>?ssl=true" --collection="<name>" <authArgs> <sslArgs>     --tlsInsecure --gzip --out="<dir>"     --numParallelCollections 8
+  mongodump --uri="mongodb://<host:port/db>?ssl=true" --collection="<name>" <authArgs> <sslArgs>  --tlsInsecure --gzip --out="<dir>" --numParallelCollections 8
   ```
 
 ---
