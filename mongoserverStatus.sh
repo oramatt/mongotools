@@ -1,49 +1,27 @@
 #!/bin/bash
 
 #
-# Script purpose - Planning
+# Script purpose - MongoDB Workload Observation
 #
 # Author: Matt DeMarco (matthew.demarco@oracle.com)
 #
-# This script is intended for use during the Planning phase for compatibility analysis.
-# It captures live server workload characteristics using the MongoDB `serverStatus()` command and enables 
-# both snapshot and continuous streaming observations.
+# Example script for the Planning and Validation phases of a MongoDB migration or compatibility assessment.
+# This script captures MongoDB server status information for workload characterization and validation.
 #
-# This script can perform the following:
-# 
-# 1. Capture a one-time snapshot of `db.serverStatus()` output from a MongoDB instance using `mongosh`.
-# 2. Stream serverStatus output at a configurable interval for live workload monitoring.
-# 3. Save the output to a JSON file with optional timestamped filenames for historical traceability.
-# 4. Highlight user-specified keywords (e.g. "find", "update", "split") in the terminal using ANSI color formatting.
-# 5. (Planned) Optionally redact sensitive metadata fields such as `host`, `pid`, `localTime`, `connections`, 
-#    `security`, and `transportSecurity` from the JSON output while preserving the schema.
+# This script can do the following:
+# 1. Capture serverStatus() output from a MongoDB instance using mongosh
+# 2. Stream the serverStatus output at a configurable interval, useful for live monitoring
+# 3. Write timestamped JSON output to a file for each run or stream interval
+# 4. Optionally redact sensitive fields (host, pid, localTime, connections, security, transportSecurity)
+# 5. Highlight user-defined keywords in the console output using colored ANSI formatting
 #
 # Example usage:
-#   ./mongoServerStatus.sh --uri mongodb://localhost:27017 --highlight find aggregate
-#   ./mongoServerStatus.sh --stream --interval 10 --highlight update delete
-#   ./mongoServerStatus.sh --out server_snapshot.json --highlight split --stream
-
-# Analyzing multiple system examples
-# - Passing mongodb uri
-# for i in mongodb://localhost:23456 mongodb://localhost:23456 mongodb://localhost:23456 mongodb://localhost:27017
-# do
-# bash mongoserverStatus.sh --uri $i
-# done
-
-# - Reading mongodb uri from file with newline for each source system
-# more src
-# mongodb://localhost:23456
-# mongodb://localhost:23456
-# mongodb://localhost:27017
-
-# for i in $(cat src)
-# do
-# bash mongoserverStatus.sh --uri $i
-# done
-
+#   ./mongoserverStatus.sh --uri mongodb://localhost:27017 --highlight find aggregate
+#   ./mongoserverStatus.sh --stream --interval 10 --redact
+#   ./mongoserverStatus.sh --out server_snapshot.json --highlight update --redact
 
 # Default values
-MONGOSH_PATH="/opt/homebrew/bin/mongosh"
+MONGOSH_PATH="/Users/mademarc/Downloads/mongosh-2.5.6-darwin-arm64/bin/mongosh"
 MONGODB_URI="mongodb://localhost:23456"
 OUTPUT_FILE="mongodb_workload_assessment_log.json"
 TIMESTAMP=$(date '+%Y_%m_%d_%H%M%S')
@@ -86,12 +64,6 @@ while [[ $# -gt 0 ]]; do
         shift
       done
       ;;
-    --help)
-      shift
-      echo "Unknown option: $1"
-      echo "Usage: $0 [--uri URI] [--out FILE] [--stream] [--interval SECONDS] [--highlight WORD1 WORD2 ...]"
-      exit 1
-      ;;
     *)
       echo "Unknown option: $1"
       echo "Usage: $0 [--uri URI] [--out FILE] [--stream] [--interval SECONDS] [--highlight WORD1 WORD2 ...]"
@@ -132,9 +104,9 @@ fetch_data() {
   "$MONGOSH_PATH" "$MONGODB_URI" --quiet --eval 'EJSON.stringify(db.serverStatus(), null, 2)'
 }
 
-# redact_data(){
-#   jq 'del(.host, .pid, .localTime, .connections, .security, .transportSecurity)' \\n  /tmp/assesslog.json > /tmp/redacted_assesslog.json
-# }
+redact_data(){
+  jq 'del(.host, .pid, .localTime, .connections, .security, .transportSecurity)' \\n  /tmp/assesslog.json > /tmp/redacted_assesslog.json
+}
 
 # Highlight console output
 highlight_log() {
