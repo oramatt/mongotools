@@ -190,6 +190,96 @@ Then, select an action:
 
 ---
 
+### `mongoServerStatus.sh` – MongoDB Workload Observation
+
+### Features
+
+- Capture one-time snapshot of `db.serverStatus()` metrics.
+- Continuously stream serverStatus output at defined intervals.
+- Highlight user-defined keywords in color-coded console output.
+- Save all output to a timestamped JSON log file.
+
+---
+
+### Prerequisites
+
+- Install `mongosh` (MongoDB Shell).
+- Install `jq` (for JSON formatting and redaction).
+- Ensure the script is executable:
+
+```bash
+chmod +x mongoServerStatus.sh
+```
+
+---
+
+### Usage
+
+Run:
+
+```bash
+./mongoServerStatus.sh
+```
+
+You’ll be prompted for configuration via command-line flags.
+
+---
+
+### Example Flags
+
+```bash
+--uri               MongoDB connection string (default: mongodb://localhost:23456)
+--out               Output filename (default: mongodb_workload_assessment_log.json)
+--stream            Enable continuous streaming mode
+--interval N        Interval between samples in seconds (default: 5)
+--highlight WORDS   Highlight keywords in console (e.g., --highlight find update insert)
+--help              Provides usage instructions
+```
+
+---
+
+### Example Commands
+
+```bash
+# One-time snapshot with default settings
+./mongoServerStatus.sh
+
+# Stream serverStatus every 10 seconds
+./mongoServerStatus.sh --stream --interval 10
+
+# Highlight keywords in color while streaming
+./mongoServerStatus.sh --stream --highlight find aggregate update
+
+```
+
+---
+
+### Highlighting (Optional)
+
+Using `--highlight`, console output will colorize matching keywords:
+
+- First keyword in **red**
+- Second in **yellow**
+- Third in **cyan**
+
+For example:
+
+```bash
+./mongoServerStatus.sh --highlight find update insert
+```
+
+---
+
+### Logging
+
+All output is saved to a JSON file named with a timestamp (e.g., `2025_11_14_115230_mongodb_workload_assessment_log.json`).  
+In stream mode, the file name is prefixed with `streamout_`.
+
+---
+
+This script is ideal for quick server health checks, workload sampling, or tracking operational changes during migrations or testing.
+
+
 ## Author
 Matt DeMarco  
 [matthew.demarco@oracle.com](mailto:matthew.demarco@oracle.com)  
