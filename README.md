@@ -190,7 +190,7 @@ Then, select an action:
 
 ---
 
-### `mongoServerStatus.sh` – MongoDB Workload Observation
+### `mongoserverStatus.sh` – MongoDB Workload Observation
 
 ### Features
 
@@ -208,7 +208,7 @@ Then, select an action:
 - Ensure the script is executable:
 
 ```bash
-chmod +x mongoServerStatus.sh
+chmod +x mongoserverStatus.sh
 ```
 
 ---
@@ -218,7 +218,7 @@ chmod +x mongoServerStatus.sh
 Run:
 
 ```bash
-./mongoServerStatus.sh
+./mongoserverStatus.sh
 ```
 
 You’ll be prompted for configuration via command-line flags.
@@ -242,13 +242,13 @@ You’ll be prompted for configuration via command-line flags.
 
 ```bash
 # One-time snapshot with default settings
-./mongoServerStatus.sh
+./mongoserverStatus.sh
 
 # Stream serverStatus every 10 seconds
-./mongoServerStatus.sh --stream --interval 10
+./mongoserverStatus.sh --stream --interval 10
 
 # Highlight keywords in color while streaming
-./mongoServerStatus.sh --stream --highlight find aggregate update
+./mongoserverStatus.sh --stream --highlight find aggregate update
 
 ```
 
@@ -265,7 +265,7 @@ Using `--highlight`, console output will colorize matching keywords:
 For example:
 
 ```bash
-./mongoServerStatus.sh --highlight find update insert
+./mongoserverStatus.sh --highlight find update insert
 ```
 
 ---
