@@ -7,6 +7,7 @@ This repository contains two Bash scripts to assist with MongoDB data migration 
 |--------|---------|
 | [`mongoDump.sh`](https://github.com/oramatt/mongotools/blob/main/mongoDump.sh) | Bulk export/import of MongoDB data for migration. |
 | [`mongoProfileExport.sh`](https://github.com/oramatt/mongotools/blob/main/mongoProfileExport.sh) | Enables profiling, exports, and analyzes MongoDB performance. |
+| [`mongoserverStatus.sh`](https://github.com/oramatt/mongotools/blob/main/mongoserverStatus.sh) | Lightweight output for primarily analysis for compatibility. | 
 
 ---
 
