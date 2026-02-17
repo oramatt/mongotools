@@ -1,6 +1,6 @@
 # MongoDB Migration and Profiling Utilities
 
-This repository contains two Bash scripts to assist with MongoDB data migration and profiling analysis. These scripts enable exporting/importing data between MongoDB and Oracle Database API for MongoDB, as well as reviewing MongoDB profiling data.
+This repository contains three Bash scripts to assist with MongoDB data migration and profiling analysis. These scripts enable exporting/importing data between MongoDB and Oracle Database API for MongoDB, as well as reviewing MongoDB profiling data.
 
 ## Scripts Overview
 | Script | Purpose |
@@ -283,6 +283,11 @@ This script is ideal for quick server health checks, workload sampling, or track
 ## Author
 Matt DeMarco  
 [matthew.demarco@oracle.com](mailto:matthew.demarco@oracle.com)  
+
+---
+
+## Disclaimer
+The use of the scripts is at your sole risk. All information is provided "as -is", without any warranty of its accuracy, completeness, fitness for a particular purpose.
 
 ---
 
