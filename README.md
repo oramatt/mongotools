@@ -287,7 +287,7 @@ Matt DeMarco
 ---
 
 ## Disclaimer
-The use of the scripts is at your sole risk. All information is provided "as -is", without any warranty of its accuracy, completeness, fitness for a particular purpose.
+The use of the scripts is at your sole risk. All information is provided "as-is", without any warranty of its accuracy, completeness, fitness for a particular purpose.
 
 ---
 
